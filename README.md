@@ -1,2 +1,3 @@
-# id-fido-u2f
-Innovation day project to build a poc of authentication using FIDO U2F
+# my-dropwizard
+
+A working project based on dropwizard to quickly start java web services
