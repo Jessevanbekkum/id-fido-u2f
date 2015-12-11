@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Title</title>
+</head>
+<script src="https://demo.yubico.com/js/u2f-api.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"/>
+<script>
+  $.ajax({
+    url: '/yubi/auth/henk',
+    type: 'GET',
+    dataType: 'json',
+    success: function (data) {
+      sign(data);
+    }
+  });
+
+  function sendRegistration(data) {
+    $.ajax({
+      contentType: "application/json",
+      url: '/yubi/auth/henk',
+      type: 'POST',
+      dataType: 'json',
+      data: data,
+      success: function () {
+        console.log("asdkfjasdlkj")
+        $('#msg').html('Gefeliciteerd. U mag naar binnen. Klik op <a href="secret">secret</a>.')
+      }
+    })
+  }
+  function sign(request) {
+    setTimeout(function () {
+      u2f.sign(request.authenticateRequests,
+              function (data) {
+                if (data.errorCode) {
+                  alert("U2F failed with error code: " + data.errorCode);
+                  return;
+                }
+                sendRegistration(JSON.stringify(data))
+              });
+    }, 1000);
+  }
+</script>
+<body>
+
+<div id="msg">Klik op de gouden knop op uw yubikey om in te loggen.</div>
+</body>
+</html>
