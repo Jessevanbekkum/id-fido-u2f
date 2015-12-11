@@ -25,6 +25,9 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
+    compile("org.springframework.boot:spring-boot-devtools")
+
+
     compile("com.yubico:u2flib-server-core:0.15.0")
     compile("org.springframework.boot:spring-boot-starter-thymeleaf")
     // tag::security[]

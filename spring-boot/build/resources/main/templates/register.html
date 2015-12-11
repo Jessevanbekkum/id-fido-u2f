@@ -1,12 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8"/>
   <title>Title</title>
   <script src="https://demo.yubico.com/js/u2f-api.js"></script>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"/>
+  <script>
+    $.ajax({
+      url: '/yubi/register/henk',
+      type: 'GET',
+      dataType: 'json',
+      success: function (data) {
+        register(data);
+      }
+    });
 
+    function sendRegistration(data) {
+      $.ajax({
+        contentType: "application/json",
+        url: '/yubi/register/henk',
+        type: 'POST',
+        dataType:'json',
+        data: data
+      })
+    }
+
+    function register(challenge) {
+      console.log(challenge);
+      var request = challenge;
+      setTimeout(function () {
+        u2f.register(request.registerRequests, request.authenticateRequests,
+                function (data) {
+                  if (data.errorCode) {
+                    alert("U2F failed with error: " + data.errorCode);
+                    return;
+                  }
+var data2 = JSON.stringify(data)
+                  console.log(data2);
+                  sendRegistration(data2)
+                });
+      }, 1000);
+    }
+  </script>
+
+  <!--<script>-->
+  <!--var challenge =-->
+  <!--u2f.sign([challenge], [],-->
+  <!--function(deviceResponse) {-->
+  <!--document.getElementById('response-input').value = JSON.stringify(deviceResponse)-->
+  <!--document.getElementById('login-form').submit() 2-->
+  <!--}-->
+  <!--);-->
+  <!--</script>-->
 </head>
 <body>
+Klik op uw yubikey
 
 </body>
 </html>
+
+
+
