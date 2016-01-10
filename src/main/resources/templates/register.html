@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Fido U2F demonstration</title>
+  <script src="https://demo.yubico.com/js/u2f-api.js"></script>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"/>
+  <script>
+    function getChallenge() {
+      $.ajax({
+        url: '/yubi/register',
+        type: 'GET',
+        dataType: 'json',
+        success: function (data) {
+          $('#msg').html("Please click your yubikey");
+          $('#form').hide();
+          register(data);
+        }
+      });
+    }
+
+    function sendRegistration(data) {
+      $.ajax({
+        contentType: "application/json",
+        url: '/yubi/register',
+        type: 'POST',
+        dataType: 'json',
+        data: data,
+        success: function () {
+          $('#msg').html('You yubikey has been registered. Click <a href="login">login</a>');
+        }
+      })
+    }
+
+    function register(challenge) {
+      console.log(challenge);
+      var request = challenge;
+      setTimeout(function () {
+        u2f.register(request.registerRequests, request.authenticateRequests,
+                function (data) {
+                  if (data.errorCode) {
+                    alert("U2F failed with error: " + data.errorCode);
+                    return;
+                  }
+                  var data2 = JSON.stringify(data);
+                  console.log(data2);
+                  sendRegistration(data2)
+                });
+      }, 1000);
+    }
+
+  </script>
+</head>
+<body>
+<div th:include="fragments/menu :: menu"></div>
+
+<div id="form">
+  <button value="Click" onclick="getChallenge()">Click</button>
+</div>
+<div id="msg"></div>
+
+</body>
+</html>
+
+
+

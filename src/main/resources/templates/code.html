@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Fido U2F demonstration</title>
+</head>
+<script src="https://demo.yubico.com/js/u2f-api.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"/>
+<script th:inline="javascript">
+  $.ajax({
+    url: '/yubi/auth',
+    type: 'GET',
+    dataType: 'json',
+    success: function (data) {
+      sign(data);
+    },
+    error: function () {
+      registerFirst()
+    }
+  });
+
+  function sendRegistration(data) {
+    $.ajax({
+      contentType: "application/json",
+      url: '/yubi/auth',
+      type: 'POST',
+      dataType: 'json',
+      data: data,
+      success: function () {
+        $('#msg').html('Congratulations. You may enter. Click <a href="secret">secret</a>.')
+      }
+    })
+  }
+  function sign(request) {
+    setTimeout(function () {
+      u2f.sign(request.authenticateRequests,
+              function (data) {
+                if (data.errorCode) {
+                  alert("U2F failed with error code: " + data.errorCode);
+                  return;
+                }
+                sendRegistration(JSON.stringify(data))
+              });
+    }, 1000);
+  }
+
+  function registerFirst() {
+    $('#msg').html('Please register a u2f device first.')
+
+  }
+</script>
+<body>
+<div th:include="fragments/menu :: menu"></div>
+
+<div id="msg">Please press the gold button on the yubikey to login</div>
+
+</body>
+</html>
