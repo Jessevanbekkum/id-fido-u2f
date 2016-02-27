@@ -31,7 +31,7 @@ import com.yubico.u2f.exceptions.NoEligableDevicesException;
  * This controller handles registration and logging in (the challenge) of users via several rest calls.
  */
 public class ChallengeApi {
-    private final static Logger LOG = LoggerFactory.getLogger(ChallengeApi.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ChallengeApi.class);
 
     // Unique key for this web application.
     public static final String APP_ID = "https://localhost:8443";
@@ -50,8 +50,8 @@ public class ChallengeApi {
      */
     @RequestMapping(path = "yubi/register", method = RequestMethod.GET)
     public RegisterRequestData startRegistration() {
-        String username = getUsername();
-
+        LOG.info("Starting registration");
+        String username = getUsernameFromAuthenticationContext();
         RegisterRequestData registerRequestData = u2f.startRegistration(APP_ID, getRegistrations(username));
         requestStorage.put(registerRequestData.getRequestId(), registerRequestData.toJson());
         return registerRequestData;
@@ -68,10 +68,9 @@ public class ChallengeApi {
             consumes = "application/json", produces = "application/json")
     @ResponseBody
     public String finishRegistration(@RequestBody String registerResponseStr) {
-        String username = getUsername();
-
+        LOG.info("Finishing registration");
+        String username = getUsernameFromAuthenticationContext();
         final RegisterResponse registerResponse = RegisterResponse.fromJson(registerResponseStr);
-
         RegisterRequestData registerRequestData =
                 RegisterRequestData.fromJson(requestStorage.remove(registerResponse.getRequestId()));
         DeviceRegistration registration = u2f.finishRegistration(registerRequestData, registerResponse);
@@ -86,7 +85,8 @@ public class ChallengeApi {
      */
     @RequestMapping(value = "/yubi/auth", method = RequestMethod.GET)
     public ResponseEntity<String> startAuthentication(){
-        String username = getUsername();
+        LOG.info("Starting Authentication");
+        String username = getUsernameFromAuthenticationContext();
         AuthenticateRequestData authenticateRequestData;
         try {
             authenticateRequestData = u2f.startAuthentication(APP_ID, getRegistrations(username));
@@ -105,7 +105,8 @@ public class ChallengeApi {
      */
     @RequestMapping(value = "/yubi/auth", method = RequestMethod.POST)
     public ResponseEntity<String> finishAuthentication(@RequestBody String response) {
-        String username = getUsername();
+        LOG.info("Finishing Authentication");
+        String username = getUsernameFromAuthenticationContext();
 
         AuthenticateResponse authenticateResponse = AuthenticateResponse.fromJson(response);
         AuthenticateRequestData authenticateRequest = AuthenticateRequestData.fromJson(requestStorage.remove(authenticateResponse.getRequestId()));
@@ -124,7 +125,7 @@ public class ChallengeApi {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    private String getUsername() {
+    private String getUsernameFromAuthenticationContext() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return auth.getName();
     }
@@ -145,7 +146,7 @@ public class ChallengeApi {
     private void grantAuthority() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         List<GrantedAuthority> authorities = new ArrayList<>(auth.getAuthorities());
-        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        authorities.add(new SimpleGrantedAuthority("ROLE_STRONG_AUTH_USER"));
         Authentication newAuth = new UsernamePasswordAuthenticationToken(auth.getPrincipal(), auth.getCredentials(), authorities);
         SecurityContextHolder.getContext().setAuthentication(newAuth);
     }

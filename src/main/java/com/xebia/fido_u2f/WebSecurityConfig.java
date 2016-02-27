@@ -20,6 +20,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable()
             .authorizeRequests()
                 .antMatchers("/code", "/register").hasRole("PRE_AUTH_USER")
+                .antMatchers("/secret").hasRole("STRONG_AUTH_USER")
                 .antMatchers("/", "/home", "/yubi/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
